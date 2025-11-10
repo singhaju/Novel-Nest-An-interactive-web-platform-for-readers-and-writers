@@ -1,0 +1,151 @@
+import { type NextRequest, NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { uploadToGoogleDrive } from "@/lib/google-drive"
+
+// GET /api/novels - Get all novels with filters
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams
+    // allow multiple ?status= or a comma-separated single status param
+    const rawStatus = searchParams.getAll("status") // allow multiple ?status=
+    let status: string[] = []
+    if (rawStatus.length === 1 && rawStatus[0].includes(",")) {
+      status = rawStatus[0].split(",").map((s) => s.trim())
+    } else {
+      status = rawStatus.map((s) => s.trim()).filter(Boolean)
+    }
+    const genre = searchParams.get("genre")
+    const authorId = searchParams.get("authorId")
+    const limit = Number.parseInt(searchParams.get("limit") || "12")
+    const offset = Number.parseInt(searchParams.get("offset") || "0")
+
+    const where: any = {}
+
+    if (status.length > 0) {
+      // Prisma enum values are uppercase (see prisma/schema.prisma). Normalize
+      // incoming values to uppercase so clients may send `ongoing,completed` or
+      // `ONGOING`.
+      where.status = { in: status.map((s) => s.toUpperCase()) }
+    }
+
+    if (genre) {
+      where.tags = { contains: genre }
+    }
+
+    if (authorId) {
+      where.author_id = Number.parseInt(authorId)
+    }
+
+    const novels = await prisma.novel.findMany({
+      where,
+      include: {
+        author: {
+          select: {
+            user_id: true,
+            username: true,
+            profile_picture: true,
+          },
+        },
+        _count: {
+          select: {
+            episodes: true,
+            reviews: true,
+          },
+        },
+      },
+      orderBy: { views: "desc" },
+      take: limit,
+      skip: offset,
+    })
+
+    const total = await prisma.novel.count({ where })
+
+    // Map Prisma model fields to the frontend shape expected by components
+    const mapped = novels.map((n: any) => ({
+      id: String(n.novel_id),
+      title: n.title,
+      author_id: String(n.author_id),
+      summary: n.description || undefined,
+      cover_url: n.cover_image || undefined,
+      status: (n.status || "").toLowerCase(),
+      total_views: n.views ?? 0,
+      total_likes: n.likes ?? 0,
+      rating: Number(n.rating ?? 0),
+      genre: n.tags || undefined,
+      created_at: n.created_at?.toISOString?.() ?? n.created_at,
+      updated_at: n.last_update?.toISOString?.() ?? n.last_update,
+      author: n.author
+        ? {
+            id: String(n.author.user_id),
+            username: n.author.username,
+            avatar_url: n.author.profile_picture || undefined,
+          }
+        : undefined,
+    }))
+
+    return NextResponse.json({ novels: mapped, total, limit, offset })
+  } catch (error) {
+    console.error("Error fetching novels:", error)
+    return NextResponse.json({ error: "Failed to fetch novels" }, { status: 500 })
+  }
+}
+
+
+// POST /api/novels - Create a new novel
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth()
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const formData = await request.formData()
+    const title = formData.get("title") as string
+    const description = formData.get("description") as string
+    const tags = formData.get("tags") as string
+    const coverImage = formData.get("coverImage") as File | null
+
+    if (!title) {
+      return NextResponse.json({ error: "Title is required" }, { status: 400 })
+    }
+
+    let coverImageUrl: string | undefined
+
+    // Upload cover image to Google Drive if provided
+    if (coverImage) {
+      const buffer = Buffer.from(await coverImage.arrayBuffer())
+      coverImageUrl = await uploadToGoogleDrive({
+        fileName: `cover_${Date.now()}_${coverImage.name}`,
+        mimeType: coverImage.type,
+        fileContent: buffer,
+        folderId: process.env.GOOGLE_DRIVE_COVERS_FOLDER_ID,
+      })
+    }
+
+    const novel = await prisma.novel.create({
+      data: {
+        title,
+        description,
+        tags,
+        cover_image: coverImageUrl,
+        author_id: Number.parseInt((session.user as any).id),
+        status: "PENDING_APPROVAL",
+      },
+      include: {
+        author: {
+          select: {
+            user_id: true,
+            username: true,
+          },
+        },
+      },
+    })
+
+    return NextResponse.json(novel, { status: 201 })
+  } catch (error) {
+    console.error("Error creating novel:", error)
+    return NextResponse.json({ error: "Failed to create novel" }, { status: 500 })
+  }
+}
