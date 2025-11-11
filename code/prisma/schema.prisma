@@ -40,6 +40,7 @@ model User {
   reviews               Review[]
   comments              Comment[]
   wishlists             UserWishlist[]
+  likes                 NovelLike[]
   following             UserFollow[]         @relation("Follower")
   followers             UserFollow[]         @relation("Following")
   readingProgress       UserReadingProgress[]
@@ -68,6 +69,7 @@ model Novel {
   episodes    Episode[]
   reviews     Review[]
   wishlists   UserWishlist[]
+  novelLikes  NovelLike[]
   readingProgress UserReadingProgress[]
   novelAuthors NovelAuthor[]
 
@@ -157,6 +159,20 @@ model UserWishlist {
 
   @@id([user_id, novel_id])
   @@map("user_wishlist")
+}
+
+// Novel Likes (Bridge Table)
+model NovelLike {
+  user_id  Int
+  novel_id Int
+  liked_at DateTime @default(now())
+
+  // Relations
+  user     User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  novel    Novel    @relation(fields: [novel_id], references: [novel_id], onDelete: Cascade)
+
+  @@id([user_id, novel_id])
+  @@map("novel_likes")
 }
 
 // User Follows (Bridge Table)

@@ -1,3 +1,29 @@
+// GET /api/follows?authorId=123 - Check if current user follows authorId
+export async function GET(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ isFollowing: false }, { status: 200 });
+    }
+    const userId = Number.parseInt((session.user as any).id);
+    const authorId = Number.parseInt(request.nextUrl.searchParams.get("authorId") || "0");
+    if (!authorId || userId === authorId) {
+      return NextResponse.json({ isFollowing: false }, { status: 200 });
+    }
+    const existing = await prisma.userFollow.findUnique({
+      where: {
+        follower_id_following_id: {
+          follower_id: userId,
+          following_id: authorId,
+        },
+      },
+    });
+    return NextResponse.json({ isFollowing: !!existing }, { status: 200 });
+  } catch (error) {
+    console.error("Error checking follow status:", error);
+    return NextResponse.json({ isFollowing: false }, { status: 500 });
+  }
+}
 import { type NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"

@@ -60,16 +60,16 @@ export const authConfig = {
     async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id
-        token.role = user.role
+        token.role = typeof user.role === 'string' ? user.role.toLowerCase() : user.role
       }
-      return token
+      return token;
     },
     async session({ session, token }: any) {
       if (session.user) {
-        session.user.id = token.id
-        session.user.role = token.role
+        session.user.id = token.id;
+        session.user.role = typeof token.role === 'string' ? token.role.toLowerCase() : token.role;
       }
-      return session
+      return session;
     },
   },
 
