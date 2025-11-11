@@ -21,7 +21,7 @@ export function FollowButton({ authorId, initialFollowing = false }: FollowButto
   useEffect(() => {
     // Check initial following status using API client
     const checkFollowingStatus = async () => {
-      if (!session?.user) return
+      if (!session?.user || !authorId) return
 
       try {
         const result = await apiClient.checkFollow(authorId)
@@ -32,11 +32,16 @@ export function FollowButton({ authorId, initialFollowing = false }: FollowButto
     }
 
     checkFollowingStatus()
-  }, [session])
+  }, [session, authorId])
 
   const handleFollow = async () => {
     if (!session?.user) {
       router.push("/auth/login")
+      return
+    }
+
+    if (!authorId) {
+      console.error("Author ID is required")
       return
     }
 

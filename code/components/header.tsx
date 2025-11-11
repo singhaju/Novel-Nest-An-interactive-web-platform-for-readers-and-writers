@@ -1,10 +1,14 @@
-import Link from "next/link"
-import { Search, Star, BarChart3, User } from "lucide-react"
-import { getCurrentUser } from "@/lib/actions/auth"
-import { UserMenu } from "./user-menu"
+"use client"
 
-export async function Header() {
-  const user = await getCurrentUser()
+import Link from "next/link"
+import { Star, BarChart3, User } from "lucide-react"
+import { UserMenu } from "./user-menu"
+import { useSession } from "next-auth/react"
+import { SearchBar } from "./search-bar"
+
+export function Header() {
+  const { data: session } = useSession()
+  const user = session?.user
 
   return (
     <header className="border-b border-border bg-background">
@@ -18,23 +22,16 @@ export async function Header() {
         </Link>
 
         {/* Search Bar */}
-        <div className="relative flex-1 max-w-2xl">
-          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            placeholder="Search novels..."
-            className="w-full rounded-full bg-muted px-12 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
+        <SearchBar />
 
         {/* Right Icons */}
         <div className="flex items-center gap-4">
-          {user && (user.role === "admin" || user.role === "developer") && (
+          {user && (user.role === "Admin" || user.role === "Developer") && (
             <Link href="/admin" className="text-foreground hover:text-muted-foreground">
               <BarChart3 className="h-6 w-6" />
             </Link>
           )}
-          {user && user.role === "author" && (
+          {user && user.role === "Writer" && (
             <Link href="/author" className="text-foreground hover:text-muted-foreground">
               <Star className="h-6 w-6" />
             </Link>

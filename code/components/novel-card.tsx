@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import Image from "next/image"
 import type { Novel } from "@/lib/types/database"
@@ -8,23 +10,41 @@ interface NovelCardProps {
 }
 
 export function NovelCard({ novel }: NovelCardProps) {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget
+    img.style.display = "none"
+    const placeholder = img.nextElementSibling as HTMLElement
+    if (placeholder) {
+      placeholder.style.display = "flex"
+    }
+  }
+
   return (
     <Link href={`/novel/${novel.id}`} className="group">
       <div className="space-y-2">
         {/* Cover Image */}
         <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 to-green-100">
           {novel.cover_url ? (
-            <Image
-              src={novel.cover_url || "/placeholder.svg"}
-              alt={novel.title}
-              fill
-              className="object-cover transition-transform group-hover:scale-105"
-            />
+            <>
+              <img
+                src={novel.cover_url}
+                alt={novel.title}
+                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                onError={handleImageError}
+                loading="lazy"
+              />
+              <div className="hidden h-full items-center justify-center">
+                <div className="text-center p-4">
+                  <p className="text-lg font-bold text-foreground">{novel.title}</p>
+                  <p className="text-sm text-muted-foreground">Novel Cover</p>
+                </div>
+              </div>
+            </>
           ) : (
             <div className="flex h-full items-center justify-center">
               <div className="text-center p-4">
-                <p className="text-lg font-bold text-foreground">Novel</p>
-                <p className="text-sm text-muted-foreground">Cover</p>
+                <p className="text-lg font-bold text-foreground">{novel.title}</p>
+                <p className="text-sm text-muted-foreground">Novel Cover</p>
               </div>
             </div>
           )}
