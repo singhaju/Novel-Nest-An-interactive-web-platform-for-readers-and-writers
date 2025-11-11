@@ -8,6 +8,12 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.ibb.co',
+      },
+    ],
   },
   // Set turbopack.root to ensure Turbopack uses this folder as the workspace
   // root when Next detects multiple lockfiles in parent folders.

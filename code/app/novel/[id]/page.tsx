@@ -9,6 +9,8 @@ import Image from "next/image"
 import { LikeButton } from "@/components/like-button"
 import { WishlistButton } from "@/components/wishlist-button"
 import { FollowButton } from "@/components/follow-button"
+import { ShareButton } from "@/components/share-button"
+import { NovelCoverImage } from "@/components/novel-cover-image"
 import type { Session } from "next-auth"
 
 export default async function NovelDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -63,18 +65,7 @@ export default async function NovelDetailPage({ params }: { params: Promise<{ id
           {/* Left Sidebar */}
           <div className="space-y-4">
             {/* Cover Image */}
-            <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 to-green-100">
-              {novel.cover_image ? (
-                <Image src={novel.cover_image || "/placeholder.svg"} alt={novel.title} fill className="object-cover" />
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center p-4">
-                    <p className="text-2xl font-bold text-foreground">Novel</p>
-                    <p className="text-lg text-muted-foreground">Cover</p>
-                  </div>
-                </div>
-              )}
-            </div>
+            <NovelCoverImage coverImage={novel.cover_image} title={novel.title} size="large" />
 
             {/* Stats Card */}
             <div className="rounded-2xl border border-border bg-card p-4 space-y-2">
@@ -104,11 +95,8 @@ export default async function NovelDetailPage({ params }: { params: Promise<{ id
               <LikeButton novelId={Number(resolvedParams.id)} initialLiked={hasLiked} />
               <WishlistButton novelId={Number(resolvedParams.id)} initialWishlisted={hasWishlisted} />
 
-              <FollowButton authorId={novel.author?.id || novel.user_id} />
-              <Button variant="outline" className="w-full rounded-2xl bg-transparent">
-                <Share2 className="mr-2 h-4 w-4" />
-                Share
-              </Button>
+              <FollowButton authorId={novel.author?.user_id || novel.author_id} />
+              <ShareButton novelId={resolvedParams.id} novelTitle={novel.title} />
             </div>
           </div>
 
