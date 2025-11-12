@@ -104,7 +104,17 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const title = formData.get("title") as string
     const description = formData.get("description") as string
-    const tags = formData.get("tags") as string
+    const tagsRaw = formData.get("tags")
+    let tags = ""
+
+    if (typeof tagsRaw === "string") {
+      try {
+        const parsed = JSON.parse(tagsRaw)
+        tags = Array.isArray(parsed) ? parsed.filter(Boolean).join(", ") : tagsRaw
+      } catch (error) {
+        tags = tagsRaw
+      }
+    }
     const coverImage = formData.get("coverImage") as File | null
 
     if (!title) {

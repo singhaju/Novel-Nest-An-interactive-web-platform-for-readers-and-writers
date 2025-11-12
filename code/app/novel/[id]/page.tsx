@@ -147,16 +147,25 @@ export default async function NovelDetailPage(props: { params: PageParams } | { 
               <h2 className="mb-3 text-xl font-semibold">Summary</h2>
               <p className="leading-relaxed text-muted-foreground">{novel.description || "No summary available."}</p>
               {novel.tags && (
-                <div className="mt-4 flex flex-wrap gap-2 text-xs uppercase text-muted-foreground">
+                <div className="mt-4 flex flex-wrap gap-2">
                   {novel.tags
                     .split(",")
                     .map((tag) => tag.trim())
+                    .map((tag) => tag.replace(/[\[\]"]/g, ""))
+                    .map((tag) => tag.replace(/_/g, " "))
+                    .map((tag) => tag.replace(/\s+/g, " ").trim())
                     .filter(Boolean)
-                    .map((tag) => (
-                      <span key={tag} className="rounded-full border border-border px-3 py-1">
-                        {tag}
-                      </span>
-                    ))}
+                    .map((tag) => {
+                      const display = tag.replace(/\b\w/g, (char) => char.toUpperCase())
+                      return (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+                        >
+                          {display}
+                        </span>
+                      )
+                    })}
                 </div>
               )}
             </div>
