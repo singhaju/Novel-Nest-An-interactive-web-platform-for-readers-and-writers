@@ -9,15 +9,19 @@ interface HeroSectionProps {
     novelCount: number
     writerCount: number
   }
+  isAuthenticated: boolean
 }
 
-export function HeroSection({ featured, stats }: HeroSectionProps) {
+export function HeroSection({ featured, stats, isAuthenticated }: HeroSectionProps) {
   const headline = "Read. Write. Share."
   const subheading =
     "Follow immersive stories from emerging voices across every genre and publish your own adventures with a single click."
 
   const ratingFormatted = featured && typeof featured.rating === "number" ? featured.rating.toFixed(1) : "N/A"
   const viewsFormatted = featured && typeof featured.total_views === "number" ? featured.total_views.toLocaleString() : "0"
+  const startReadingHref = isAuthenticated
+    ? "/novels"
+    : `/auth/login?callbackUrl=${encodeURIComponent("/novels")}`
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-foreground/5 via-background to-background">
@@ -38,7 +42,7 @@ export function HeroSection({ featured, stats }: HeroSectionProps) {
 
           <div className="flex flex-wrap items-center gap-4">
             <Button asChild size="lg">
-              <Link href="/novels">
+              <Link href={startReadingHref}>
                 Start Reading
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -84,7 +88,13 @@ export function HeroSection({ featured, stats }: HeroSectionProps) {
                   <span>{viewsFormatted} reads</span>
                 </div>
                 <Button asChild variant="ghost">
-                  <Link href={`/novel/${featured.id}`}>
+                  <Link
+                    href={
+                      isAuthenticated
+                        ? `/novel/${featured.id}`
+                        : `/auth/login?callbackUrl=${encodeURIComponent(`/novel/${featured.id}`)}`
+                    }
+                  >
                     Continue reading
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>

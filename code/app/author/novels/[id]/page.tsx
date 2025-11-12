@@ -26,8 +26,10 @@ export default async function ManageNovelPage(
     notFound()
   }
 
+  const canManageAll = ["admin", "developer"].includes(role)
+
   const novel = await prisma.novel.findFirst({
-    where: { novel_id: novelId, author_id: authorId },
+    where: canManageAll ? { novel_id: novelId } : { novel_id: novelId, author_id: authorId },
     include: {
       episodes: {
         orderBy: { episode_id: "asc" },

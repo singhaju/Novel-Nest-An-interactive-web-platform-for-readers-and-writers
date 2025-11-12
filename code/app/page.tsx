@@ -6,8 +6,11 @@ import { NovelRail } from "@/components/home/novel-rail"
 import { DiscoveryGrid } from "@/components/home/discovery-grid"
 import { ValueProps } from "@/components/home/value-props"
 import { CtaBanner } from "@/components/home/cta-banner"
+import { auth } from "@/lib/auth"
 
 export default async function HomePage() {
+  const session = await auth()
+
   const [trendingRes, freshRes, fantasyRes] = await Promise.all([
     apiClient.getNovels({ limit: 10, status: "ONGOING" }),
     apiClient.getNovels({ limit: 10, status: "ONGOING", offset: 10 }),
@@ -57,6 +60,7 @@ export default async function HomePage() {
       <main className="space-y-16 py-12">
         <HeroSection
           featured={featured}
+          isAuthenticated={Boolean(session?.user)}
           stats={{ novelCount: Math.max(trendingNovels.length + freshUpdates.length, 24), writerCount: 120 }}
         />
 

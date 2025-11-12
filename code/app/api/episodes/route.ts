@@ -68,6 +68,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const role = typeof (session.user as any).role === "string" ? (session.user as any).role.toLowerCase() : "reader"
+
     const contentType = request.headers.get("content-type")
     const body: any = await normaliseEpisodePayload(contentType, request)
 
@@ -90,7 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = Number.parseInt((session.user as any).id)
-    if (novel.author_id !== userId) {
+    if (novel.author_id !== userId && !["admin", "developer"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
