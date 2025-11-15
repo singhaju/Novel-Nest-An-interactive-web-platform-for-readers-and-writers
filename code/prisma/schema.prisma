@@ -15,6 +15,7 @@ enum UserRole {
   WRITER
   ADMIN
   DEVELOPER
+  SUPERADMIN
 }
 
 enum NovelStatus {

@@ -12,7 +12,7 @@ export async function GET() {
 
     const role = typeof (session.user as any)?.role === "string" ? (session.user as any).role.toLowerCase() : "reader"
 
-    if (role !== "admin") {
+  if (!["admin", "superadmin"].includes(role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

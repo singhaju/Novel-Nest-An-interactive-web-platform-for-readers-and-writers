@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 export default withAuth(
   function middleware(req) {
     const { pathname } = req.nextUrl;
+  const tokenRole = typeof req.nextauth?.token?.role === "string" ? req.nextauth.token.role.toLowerCase() : undefined;
 
     // Allow public paths (no auth check)
     const isPublicPath =
@@ -14,6 +15,19 @@ export default withAuth(
 
     if (isPublicPath) {
       return NextResponse.next();
+    }
+
+    // Enforce role-based routing for protected sections.
+    if (pathname.startsWith("/admin") && !["admin", "superadmin"].includes(tokenRole ?? "")) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    if (pathname.startsWith("/developer") && !["developer", "superadmin"].includes(tokenRole ?? "")) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    if (pathname.startsWith("/author") && !["writer", "admin", "developer", "superadmin"].includes(tokenRole ?? "")) {
+      return NextResponse.redirect(new URL("/", req.url));
     }
 
     return NextResponse.next();

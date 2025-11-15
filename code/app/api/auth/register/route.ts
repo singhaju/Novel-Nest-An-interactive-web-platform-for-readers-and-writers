@@ -6,6 +6,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { username, email, password, role = "READER" } = body
+    const allowedRoles = ["READER", "WRITER"] as const
+    const normalizedRole = typeof role === "string" ? role.toUpperCase() : "READER"
+    const assignedRole = allowedRoles.includes(normalizedRole as (typeof allowedRoles)[number])
+      ? (normalizedRole as (typeof allowedRoles)[number])
+      : "READER"
 
     // Validate input
     if (!username || !email || !password) {
@@ -32,7 +37,7 @@ export async function POST(request: NextRequest) {
         username,
         email,
         password: hashedPassword,
-        role,
+  role: assignedRole,
       },
       select: {
         user_id: true,

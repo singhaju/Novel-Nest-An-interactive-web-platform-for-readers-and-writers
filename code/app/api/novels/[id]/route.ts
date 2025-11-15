@@ -110,7 +110,7 @@ export async function PATCH(request: NextRequest, context: any) {
 
     const userRole = typeof userRoleRaw === "string" ? userRoleRaw.toLowerCase() : "reader"
 
-    if (novel.author_id !== userId && !["admin", "developer"].includes(userRole)) {
+  if (novel.author_id !== userId && !["admin", "developer", "superadmin"].includes(userRole)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -157,7 +157,7 @@ export async function DELETE(request: NextRequest, context: any) {
 
     const userRole = typeof userRoleRaw === "string" ? userRoleRaw.toLowerCase() : "reader"
 
-    if (novel.author_id !== userId && !["admin", "developer"].includes(userRole)) {
+  if (novel.author_id !== userId && !["admin", "developer", "superadmin"].includes(userRole)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
