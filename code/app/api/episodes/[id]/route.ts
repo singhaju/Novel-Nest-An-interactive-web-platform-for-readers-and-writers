@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { getFileFromGoogleDrive, uploadToGoogleDrive } from "@/lib/google-drive"
 
-function extractEpisodeId(context: any) {
-  const rawParams = context?.params instanceof Promise ? context.params : context?.params
+async function extractEpisodeId(context: any) {
+  const rawParams = context?.params instanceof Promise ? await context.params : context?.params
   return rawParams
 }
 
@@ -26,7 +26,7 @@ async function safeGetEpisodeContent(content: string | null) {
 }
 
 // GET /api/episodes/[id] - Get episode with content
-export async function GET(request: NextRequest, context: any) {
+export async function GET(_request: NextRequest, context: any) {
   const params = await extractEpisodeId(context)
   try {
     const episodeId = Number.parseInt(params?.id)
@@ -80,8 +80,9 @@ export async function PATCH(request: NextRequest, context: any) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { title, content } = body
+    const body = await request.json().catch(() => null)
+    const title = typeof body?.title === "string" ? body.title.trim() : undefined
+    const content = typeof body?.content === "string" ? body.content : undefined
 
     const episode = await prisma.episode.findUnique({
       where: { episode_id: episodeId },
@@ -99,7 +100,11 @@ export async function PATCH(request: NextRequest, context: any) {
     }
 
     const userId = Number.parseInt((session.user as any).id)
-    if (episode.novel.author_id !== userId) {
+    const roleRaw = (session.user as any).role
+    const role = typeof roleRaw === "string" ? roleRaw.toLowerCase() : "reader"
+    const privilegedRoles = ["admin", "developer", "superadmin"]
+
+    if (episode.novel.author_id !== userId && !privilegedRoles.includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -109,7 +114,7 @@ export async function PATCH(request: NextRequest, context: any) {
       updateData.title = title
     }
 
-    if (typeof content === "string") {
+    if (typeof content === "string" && content.length > 0) {
       updateData.content = content
       try {
         const newContentUrl = await uploadToGoogleDrive({
@@ -177,7 +182,11 @@ export async function DELETE(request: NextRequest, context: any) {
     }
 
     const userId = Number.parseInt((session.user as any).id)
-    if (episode.novel.author_id !== userId) {
+    const roleRaw = (session.user as any).role
+    const role = typeof roleRaw === "string" ? roleRaw.toLowerCase() : "reader"
+    const privilegedRoles = ["admin", "developer", "superadmin"]
+
+    if (episode.novel.author_id !== userId && !privilegedRoles.includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 

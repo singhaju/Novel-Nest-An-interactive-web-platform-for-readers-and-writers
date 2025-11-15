@@ -98,6 +98,14 @@ async function runSeed() {
         password: 'Dev1234!',
         profile_picture: 'https://i.pravatar.cc/150?img=68',
         bio: 'Maintains Novel Nest infrastructure and integrations.'
+      },
+      {
+        username: 'superadmin_demo',
+        email: 'superadmin@novelnest.dev',
+        role: 'SUPERADMIN',
+        password: 'Super1234!',
+        profile_picture: 'https://i.pravatar.cc/150?img=71',
+        bio: 'Highest-level administrator with full platform oversight.'
       }
     ]
 
@@ -188,7 +196,7 @@ async function runSeed() {
             'SELECT episode_id FROM episodes WHERE novel_id = ? AND title = ?',
             [writerNovelId, episode.title]
           )
-
+          
           if (existingEpisodeRows.length === 0) {
             await connection.execute(
               `INSERT INTO episodes (novel_id, title, content)
@@ -206,10 +214,63 @@ async function runSeed() {
     }
 
     console.log('\n✨ Seed script executed successfully!')
-  console.log('\n📊 Data Summary:')
-  console.log('  • Core catalog seeded from SQL file (novels, episodes, reviews, comments, follows, wishlist, reading progress)')
-  console.log('  • Added demo writer showcase novel with two walkthrough episodes')
-  console.log('  • Added four login-ready demo accounts covering reader, writer, admin, developer roles')
+    console.log('\n📊 Data Summary:')
+    console.log('  • Core catalog seeded from SQL file (novels, episodes, reviews, comments, follows, wishlist, reading progress)')
+    console.log('  • Added demo writer showcase novel with two walkthrough episodes')
+    console.log('  • Added five login-ready demo accounts covering reader, writer, admin, developer, superadmin roles')
+
+    console.log('\n🛠️ Installing advanced SQL features (stored procedure + triggers)...')
+    await connection.query(`
+      DROP PROCEDURE IF EXISTS UpdateReadingProgress;
+      CREATE PROCEDURE UpdateReadingProgress(IN p_user_id INT, IN p_novel_id INT, IN p_episode_id INT)
+      BEGIN
+        INSERT INTO user_reading_progress (user_id, novel_id, last_read_episode_id, updated_at)
+        VALUES (p_user_id, p_novel_id, p_episode_id, NOW())
+        ON DUPLICATE KEY UPDATE
+          last_read_episode_id = VALUES(last_read_episode_id),
+          updated_at = NOW();
+
+        SELECT user_id, novel_id, last_read_episode_id, updated_at
+        FROM user_reading_progress
+        WHERE user_id = p_user_id AND novel_id = p_novel_id;
+      END;
+
+      DROP TRIGGER IF EXISTS tr_reviews_after_insert;
+      CREATE TRIGGER tr_reviews_after_insert
+      AFTER INSERT ON reviews
+      FOR EACH ROW
+      UPDATE novels
+      SET rating = (
+        SELECT IFNULL(ROUND(AVG(r.rating), 2), 0)
+        FROM reviews r
+        WHERE r.novel_id = NEW.novel_id
+      )
+      WHERE novel_id = NEW.novel_id;
+
+      DROP TRIGGER IF EXISTS tr_reviews_after_update;
+      CREATE TRIGGER tr_reviews_after_update
+      AFTER UPDATE ON reviews
+      FOR EACH ROW
+      UPDATE novels
+      SET rating = (
+        SELECT IFNULL(ROUND(AVG(r.rating), 2), 0)
+        FROM reviews r
+        WHERE r.novel_id = NEW.novel_id
+      )
+      WHERE novel_id = NEW.novel_id;
+
+      DROP TRIGGER IF EXISTS tr_reviews_after_delete;
+      CREATE TRIGGER tr_reviews_after_delete
+      AFTER DELETE ON reviews
+      FOR EACH ROW
+      UPDATE novels
+      SET rating = (
+        SELECT IFNULL(ROUND(AVG(r.rating), 2), 0)
+        FROM reviews r
+        WHERE r.novel_id = OLD.novel_id
+      )
+      WHERE novel_id = OLD.novel_id;
+    `)
 
     console.log('\n🎉 Database seeding completed!')
     console.log('\n📝 Sample Credentials (for testing):')

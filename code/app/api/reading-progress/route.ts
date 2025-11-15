@@ -20,22 +20,20 @@ export async function POST(request: NextRequest) {
 
     const userId = Number.parseInt((session.user as any).id)
 
-    const progress = await prisma.userReadingProgress.upsert({
+    await prisma.$executeRaw`CALL UpdateReadingProgress(${userId}, ${novelId}, ${episodeId})`
+
+    const progress = await prisma.userReadingProgress.findUnique({
       where: {
         user_id_novel_id: {
           user_id: userId,
           novel_id: novelId,
         },
       },
-      update: {
-        last_read_episode_id: episodeId,
-      },
-      create: {
-        user_id: userId,
-        novel_id: novelId,
-        last_read_episode_id: episodeId,
-      },
     })
+
+    if (!progress) {
+      return NextResponse.json({ error: "Failed to persist reading progress" }, { status: 500 })
+    }
 
     return NextResponse.json(progress)
   } catch (error) {

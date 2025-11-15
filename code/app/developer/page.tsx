@@ -8,7 +8,7 @@ export default async function DeveloperDashboardPage() {
   const session = await auth()
   const role = typeof session?.user?.role === "string" ? session.user.role.toLowerCase() : "reader"
 
-  if (!session || role !== "developer") {
+  if (!session || !["developer", "superadmin"].includes(role)) {
     redirect("/")
   }
 

@@ -7,7 +7,7 @@ import { ApproveNovelButton } from "@/components/approve-novel-button"
 export default async function PendingNovelsPage() {
   const user = await getCurrentUser()
 
-  if (!user || user.role !== "admin") {
+  if (!user || !["admin", "superadmin"].includes(user.role)) {
     redirect("/")
   }
 

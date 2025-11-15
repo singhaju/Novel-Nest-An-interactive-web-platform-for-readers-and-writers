@@ -169,6 +169,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const role = typeof (session.user as any).role === "string" ? (session.user as any).role.toLowerCase() : "reader"
+    if (!["writer", "admin", "developer", "superadmin"].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
     const formData = await request.formData()
     const title = formData.get("title") as string
     const description = formData.get("description") as string

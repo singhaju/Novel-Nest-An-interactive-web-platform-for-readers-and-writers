@@ -17,6 +17,8 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user }: UserMenuProps) {
+  const role = typeof user.role === "string" ? user.role.toLowerCase() : "reader"
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="text-foreground hover:text-muted-foreground">
@@ -26,17 +28,17 @@ export function UserMenu({ user }: UserMenuProps) {
         <DropdownMenuItem asChild>
           <Link href="/profile">Profile</Link>
         </DropdownMenuItem>
-        {user.role === "author" && (
+        {["writer", "author", "admin", "developer", "superadmin"].includes(role) && (
           <DropdownMenuItem asChild>
             <Link href="/author">Author Dashboard</Link>
           </DropdownMenuItem>
         )}
-        {user.role === "admin" && (
+        {["admin", "superadmin"].includes(role) && (
           <DropdownMenuItem asChild>
             <Link href="/admin">Admin Dashboard</Link>
           </DropdownMenuItem>
         )}
-        {user.role === "developer" && (
+        {["developer", "superadmin"].includes(role) && (
           <DropdownMenuItem asChild>
             <Link href="/developer">Developer Dashboard</Link>
           </DropdownMenuItem>
