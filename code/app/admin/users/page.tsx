@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 export default async function AdminUsersPage() {
   const user = await getCurrentUser()
 
-  if (!user || user.role !== "admin") {
+  if (!user || !["admin", "superadmin"].includes(user.role)) {
     redirect("/")
   }
 

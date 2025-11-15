@@ -1,3 +1,14 @@
+# Fixes Applied - November 15, 2025
+
+## Highlights
+
+- Added a **SuperAdmin** role to the Prisma schema and updated auth/session typing across the app.
+- Hardened access control with middleware role checks and UI updates so privileged menus match backend rules.
+- Seed script now provisions demo accounts for every role, including `superadmin@novelnest.dev`.
+- Introduced a MySQL stored procedure (`UpdateReadingProgress`) and review rating triggers with an installer endpoint at `/api/admin/db-features`.
+- Reading-progress API now delegates to the stored procedure to satisfy the advanced SQL rubric item.
+- Added full CRUD coverage for episodes with PATCH/DELETE handlers (`app/api/episodes/[id]/route.ts`) and matching client helpers.
+
 # Fixes Applied - November 11, 2025
 
 ## Issues Resolved

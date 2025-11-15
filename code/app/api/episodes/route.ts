@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = Number.parseInt((session.user as any).id)
-    if (novel.author_id !== userId && !["admin", "developer"].includes(role)) {
+  if (novel.author_id !== userId && !["admin", "developer", "superadmin"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
