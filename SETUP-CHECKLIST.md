@@ -7,7 +7,7 @@ Use this checklist to verify the Novel Nest project runs exactly as on the stude
 - [ ] Install **pnpm 9.x** globally (`npm install -g pnpm`). Verify with `pnpm -v`.
 - [ ] Install **MySQL 8.x** (or compatible). Ensure you can sign in with an account that can create databases.
 - [ ] Install **Git** and confirm `git --version` works.
-- [ ] Enable **Google Cloud service account** access to the provided Drive folder: `YOUR_DRIVE_FOLDER_ID`. Download its JSON key (named `google-credentials.json`).
+- [ ] Enable **Google Cloud service account** access to your Drive folder (put its ID in `GOOGLE_DRIVE_UPLOAD_FOLDER_ID`). Download its JSON key (named `google-credentials.json`).
 - [ ] (Optional) Have a Supabase project ready if you plan to exercise the Supabase-powered features; otherwise you may skip those modules.
 
 ## 2. Download the Repository
@@ -38,7 +38,7 @@ Use this checklist to verify the Novel Nest project runs exactly as on the stude
   | Google Drive OAuth helper scripts | `GOOGLE_DRIVE_OAUTH_CLIENT_ID`, `GOOGLE_DRIVE_OAUTH_CLIENT_SECRET`, `GOOGLE_DRIVE_OAUTH_REFRESH_TOKEN` |
   | Public site URL helpers | `NEXT_PUBLIC_BASE_URL` |
 - [ ] Place the downloaded `google-credentials.json` inside `code/` (or update `GOOGLE_APPLICATION_CREDENTIALS` to point wherever you store it).
-- [ ] Ensure the Google Drive service account email has **Editor** access to the folder `YOUR_DRIVE_FOLDER_ID` so avatar uploads work.
+- [ ] Ensure the Google Drive service account email has **Editor** access to the folder in `GOOGLE_DRIVE_UPLOAD_FOLDER_ID` so avatar uploads work.
 
 ## 4. Install Dependencies
 - [ ] Still inside `code/`, install packages (this also triggers the `postinstall` hook defined in `package.json`):

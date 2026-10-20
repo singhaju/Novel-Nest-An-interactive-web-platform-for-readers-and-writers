@@ -5,7 +5,7 @@ import { extractDriveFileIdFromUrl } from "./utils"
 
 const DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive"]
 
-export const DEFAULT_AVATAR_FOLDER_ID = process.env.GOOGLE_DRIVE_UPLOAD_FOLDER_ID || "YOUR_DRIVE_FOLDER_ID"
+export const DEFAULT_AVATAR_FOLDER_ID = process.env.GOOGLE_DRIVE_UPLOAD_FOLDER_ID || ""
 export const DEFAULT_COVER_FOLDER_ID = process.env.GOOGLE_DRIVE_COVERS_FOLDER_ID || DEFAULT_AVATAR_FOLDER_ID
 
 let driveClientPromise: Promise<drive_v3.Drive> | null = null
